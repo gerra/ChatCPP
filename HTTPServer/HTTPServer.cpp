@@ -15,22 +15,25 @@ void HTTPServer::addBufToString(std::string &s, const char *buf, int n) {
 HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount, std::function<std::string(TCPSocket &sock, std::string &request)> onGet,
            EpollHandler &epoll) {
     std::function<void(TCPSocket &)> onAccept = [&onGet, this](TCPSocket &sock) {
-        char buf[1024];
+        const int BUF_MAX_SIZE = 4096;
+        char buf[BUF_MAX_SIZE];
 
         int len;
-        len = sock.recieveMsg(buf, 1);
-        addBufToString(currentRequest, buf, len);
-        if (buf[len - 1] == '\n') {
-            std::cout << "Request from socket " << sock.sockfd << ": " << currentRequest << "\n";
-            if (RequestUtils::isGetRequest(currentRequest)) {
-                std::string response = onGet(sock, currentRequest);
-                sock.sendMsg(response.c_str());
-                std::cout << "Response for socket " << sock.sockfd << ": " << response << "\n";
-            }
-            currentRequest = "";
+        while (true) {
+            len = sock.recieveMsg(buf, BUF_MAX_SIZE);
+            if (len <= 0) break;
+            addBufToString(currentRequest, buf, len);
         }
+
+        std::cout << "Request from socket " << sock.sockfd << ": " << currentRequest << "\n";
+        if (RequestUtils::isGetRequest(currentRequest)) {
+            std::string response = onGet(sock, currentRequest);
+            sock.sendMsg(response.c_str());
+            std::cout << "Response for socket " << sock.sockfd << ": " << response << "\n";
+        }
+        currentRequest = "";
     };
-    tcpServer = new TCPServer(addr, port, maxClientsCount, onAccept, epoll);
+    tcpServer = new TCPServer(addr, port, maxClientsCount * 2, onAccept, epoll);
 }
 
 HTTPServer::~HTTPServer() {

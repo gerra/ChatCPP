@@ -41,12 +41,12 @@ void EpollHandler::run() {
 }
 
 void EpollHandler::addSocketToEpoll(TCPSocket &socket, std::uint32_t events, Handler handler) {
-    epoll_event ev;
+    epoll_event ev = {};
     int sockfd = socket.sockfd;
     ev.data.fd = sockfd;
     ev.events = events | EPOLLRDHUP | EPOLLHUP | EPOLLERR | EPOLLIN;
     if ((epoll_ctl(epollFD, EPOLL_CTL_ADD, sockfd, &ev)) == -1) {
-        perror("epolBl_ctl");
+        perror("addSocketToEpoll_epoll_ctl");
         throw EpollException("Adding socket to epoll error");
     }
     handlers[sockfd] = handler;
@@ -64,11 +64,11 @@ int EpollHandler::getEvents(epoll_event *events, int maxEventsCount, int timeout
 
 void EpollHandler::onClose(int fd) {
     if ((epoll_ctl(epollFD, EPOLL_CTL_DEL, fd, NULL)) == -1) {
-        perror("epoll_ctl");
+        perror("onClose_epoll_ctl");
     }
     std::cerr << "epolldel starts" << "\n";
     handlers.erase(fd);
-    std::cerr << "epolldel endsmap erase" << "\n";
+    std::cerr << "epolldel ends map erase" << "\n";
 }
 
 void EpollHandler::onDelete(int fd) {

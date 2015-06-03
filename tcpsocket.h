@@ -9,6 +9,7 @@
 #include <functional>
 #include "tcpexception.h"
 #include <vector>
+#include <iostream>
 
 class EpollHandler;
 
@@ -25,6 +26,7 @@ private:
 
 public:
     void addListener(Listener *listener) {
+        std::cerr << "Listener added to socket" << sockfd << "\n";
         listeners.push_back(listener);
     }
 
@@ -42,7 +44,10 @@ public:
         sockfd = other.sockfd;
         other.sockfd = -1;
     }
-    TCPSocket& operator=(const TCPSocket&) = delete;
+
+    TCPSocket& operator=(const TCPSocket& other) {
+        sockfd = other.sockfd;
+    }
     TCPSocket& operator=(TCPSocket&& other) {
         sockfd = other.sockfd;
         other.sockfd = -1;

@@ -84,17 +84,6 @@ TCPConnection::~TCPConnection() {
     freeaddrinfo(res);
 }
 
-/*void sendToAllFromSet(std::set<int> const& st, char *msg,
-                      int msgSize, std::set<int> * exception) {
-    std::set<int>::iterator it = st.begin();
-    for (; it != st.end(); ++it) {
-        if (!exception ||
-                (exception && exception->find(*it) == exception->end())) {
-            sendToFD(*it, msg, msgSize);
-        }
-    }
-}*/
-
 void *getInAddr(sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
         return &(((sockaddr_in*)sa)->sin_addr);

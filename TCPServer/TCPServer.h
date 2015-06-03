@@ -13,9 +13,10 @@
 class TCPServer {
     TCPConnection tcpConnection;
     TCPSocket listener; // listening socket
-    std::function<void(TCPSocket&)> onAccept;
     std::vector<TCPSocket> clients;
+//    std::map<int, TCPSocket> clients;
 public:
+
     TCPServer(char *addr, char *port, int maxClientsCount, std::function<void(TCPSocket&)>,
            EpollHandler &epoll);
     ~TCPServer();

@@ -1,6 +1,7 @@
 #include "tcpsocket.h"
 #include <assert.h>
 #include <iostream>
+#include <fcntl.h>
 
 TCPSocket::TCPSocket(int fd) {
     sockfd = fd;
@@ -32,6 +33,9 @@ TCPSocket::~TCPSocket() {
 void TCPSocket::closeSocket() {
     if (sockfd >= 0) {
         std::cerr << "Closing socket " << sockfd << "\n";
+        if (listeners.size() > 0) {
+            std::cerr << "Listeners count = " << listeners.size() << "\n";
+        }
         for (auto *it : listeners) {
             it->onClose(sockfd);
         }
@@ -70,22 +74,13 @@ void TCPSocket::connectToAddr(addrinfo *addr) {
 int TCPSocket::setNonBlocking() {
     int flags;
     /* If they have O_NONBLOCK, use the Posix way to do it */
-#if defined O_NONBLOCK
     /* Fixme: O_NONBLOCK is defined but broken on SunOS 4.1.x and AIX 3.2.5. */
     if (-1 == (flags = fcntl(sockfd, F_GETFL, 0))) {
         flags = 0;
     }
     return {
-        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
-    }
-#else
-    /* Otherwise, use the old way of doing it */
-    int res = ioctl(sockfd, FIONBIO, &flags);
-    if (res == -1) {
-        throw TCPException("Unnable to set socket in nonblocking mode");
-    }
-    return res;
-#endif
+        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)
+    };
 }
 
 void TCPSocket::sendMsg(const char *msg) const {
@@ -105,7 +100,7 @@ int TCPSocket::recieveMsg(char * buf, int maxSize) const {
             return 0;
         } else {
             perror("recv");
-            throw TCPException("Recieving error");
+            //throw TCPException("Recieving error");
         }
     }
     buf[nbytes] = '\0';

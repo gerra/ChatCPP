@@ -22,6 +22,7 @@ class EpollHandler : TCPSocket::Listener {
     bool running;
     int epollFD;
     std::map<int, Handler> handlers;
+    std::map<int, TCPSocket> sockets;
     int getEvents(epoll_event *events, int maxActionsCount, int timeout = -1);
 
     volatile sig_atomic_t flag = 0;
