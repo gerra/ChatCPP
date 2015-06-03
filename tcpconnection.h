@@ -22,17 +22,9 @@ public:
     TCPConnection();
     ~TCPConnection();
     void createAddress(char * address, char * port);
-    // these 2 functions return socket file descriptor
-    TCPSocket createConnection();
-    TCPSocket createBindingSocket();
+//    TCPSocket createConnection();
+    TCPSocket *createBindingSocket();
 };
-
-/*
- * returns:
- *  < 0 if error
- *  = 0 if fd was closed
- *  > 0 is msgSize
- */
 
 std::string getAddrAsString(sockaddr_storage &addr);
 

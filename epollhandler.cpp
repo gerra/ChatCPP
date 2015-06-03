@@ -70,8 +70,3 @@ void EpollHandler::onClose(int fd) {
     handlers.erase(fd);
     std::cerr << "epolldel ends map erase" << "\n";
 }
-
-void EpollHandler::onDelete(int fd) {
-    //onClose(fd);
-    // if it' deleting |=> it was closed
-}

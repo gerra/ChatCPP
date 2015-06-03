@@ -5,14 +5,13 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
     try {
         tcpConnection.createAddress(addr, port);
         listener = tcpConnection.createBindingSocket();
-        listener.setNonBlocking();
-        listener.startListening(maxClientsCount);
-        listener.addListener((TCPSocket::Listener*)&epoll);
-        std::cerr << listener.sockfd <<  "(listener)" << "\n";
+        listener->setNonBlocking();
+        listener->startListening(maxClientsCount);
+        listener->addListener((TCPSocket::Listener*)&epoll);
+        std::cerr << listener->sockfd <<  "(listener)" << "\n";
 
-        clients.resize(maxClientsCount);
         epoll.addSocketToEpoll(
-                    listener,
+                    *listener,
                     EPOLLIN,
                     Handler([=, &epoll](int events) {
                         // events is EPOLLIN
@@ -21,27 +20,26 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
                         socklen_t addrLen;
                         addrLen = sizeof(theirAddr);
                         try {
-                            clients.push_back(listener.acceptToNewSocket((sockaddr *)&theirAddr, &addrLen));
-                            int k = clients.size() - 1;
-                            clients[k].addListener((TCPSocket::Listener*)&epoll);
-                            clients[k].setNonBlocking();
-                            Handler clientHandler = Handler([=, k](int events) {
-                                                TCPSocket &clientSocket = clients[k];
+                            TCPSocket *clientSocket = listener->acceptToNewSocket((sockaddr *)&theirAddr, &addrLen);
+                            clientSocket->addListener((TCPSocket::Listener*)&epoll);
+                            clientSocket->setNonBlocking();
+                            clients[clientSocket->sockfd] = clientSocket;
+                            Handler clientHandler = Handler([=](int events) {
                                                 try {
-                                                    std::cerr << "OnAccept" << clientSocket.sockfd << "\n";
+                                                    std::cerr << "OnAccept" << clientSocket->sockfd << "\n";
                                                     if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                                                         std::cerr << "client closed connection" << "\n";
-                                                        clientSocket.closeSocket();
+                                                        deleteClient(clientSocket);
                                                     } else {
-                                                        onAccept(clientSocket);
+                                                        onAccept(*clientSocket);
                                                     }
                                                 } catch (...) {
-                                                    clientSocket.closeSocket();
+                                                    deleteClient(clientSocket);
                                                     throw;
                                                 }
                                             });
                             epoll.addSocketToEpoll(
-                                        clients[k],
+                                        *clientSocket,
                                         EPOLLIN,
                                         clientHandler
                             );
@@ -66,6 +64,14 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
 
 TCPServer::~TCPServer() {
     std::cerr << "deleting TCPServer starts..." << "\n";
-    listener.closeSocket();
+    while (!clients.empty()) {
+        deleteClient(clients.begin()->second);
+    }
+    delete listener;
     std::cerr << "...deleting TCPServer ends" << "\n";
+}
+
+void TCPServer::deleteClient(TCPSocket *client) {
+    clients.erase(client->sockfd);
+    delete client;
 }

@@ -17,7 +17,6 @@ class TCPSocket {
 public:
     struct Listener {
         virtual void onClose(int fd) = 0;
-        virtual void onDelete(int fd) = 0;
     };
 
 private:
@@ -56,7 +55,6 @@ public:
 
     ~TCPSocket();
     TCPSocket(addrinfo *addr);
-    void closeSocket();
 
     void bindSocket(addrinfo *addr);
     void connectToAddr(addrinfo *addr);
@@ -65,7 +63,7 @@ public:
     void sendMsg(const char *msg) const;
     int recieveMsg(char * buf, int maxSize) const;
     void startListening(int count) const;
-    TCPSocket acceptToNewSocket(sockaddr *addr, socklen_t *len) const;
+    TCPSocket *acceptToNewSocket(sockaddr *addr, socklen_t *len) const;
 
 };
 

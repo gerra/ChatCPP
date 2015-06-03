@@ -36,7 +36,6 @@ public:
     void addSocketToEpoll(TCPSocket &socket, std::uint32_t events, Handler handler);
 
     void onClose(int fd);
-    void onDelete(int fd);
 };
 
 #endif // EPOLLHANDLER_H

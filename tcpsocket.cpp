@@ -23,19 +23,7 @@ TCPSocket::TCPSocket(addrinfo *addr) {
 TCPSocket::~TCPSocket() {
     std::cerr << "Deleting socket " << sockfd << "\n";
     if (sockfd >= 0) {
-        for (auto *it : listeners) {
-            it->onDelete(sockfd);
-        }
-    }
-    closeSocket();
-}
-
-void TCPSocket::closeSocket() {
-    if (sockfd >= 0) {
         std::cerr << "Closing socket " << sockfd << "\n";
-        if (listeners.size() > 0) {
-            std::cerr << "Listeners count = " << listeners.size() << "\n";
-        }
         for (auto *it : listeners) {
             it->onClose(sockfd);
         }
@@ -115,13 +103,13 @@ void TCPSocket::startListening(int count) const {
     }
 }
 
-TCPSocket TCPSocket::acceptToNewSocket(sockaddr *addr, socklen_t *len) const {
+TCPSocket *TCPSocket::acceptToNewSocket(sockaddr *addr, socklen_t *len) const {
     int newFD = accept(sockfd, addr, len);
     std::cerr << newFD << " accepting from" << sockfd << "\n" << "\n";
     if (newFD == -1) {
         perror("accept");
         throw TCPException("Unnable to accept");
     } else {
-        return TCPSocket(newFD);
+        return new TCPSocket(newFD);
     }
 }

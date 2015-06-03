@@ -13,7 +13,7 @@ void TCPConnection::createAddress(char *address, char *port) {
     }
 }
 
-TCPSocket TCPConnection::createConnection() {
+/*TCPSocket TCPConnection::createConnection() {
     addrinfo * stableAddr = NULL;
     TCPSocket resultSocket;
     for (stableAddr = res; stableAddr != NULL; stableAddr = stableAddr->ai_next) {
@@ -40,41 +40,41 @@ TCPSocket TCPConnection::createConnection() {
         throw TCPException("Failed to connect");
     }
     return resultSocket;
-}
+}*/
 
-TCPSocket TCPConnection::createBindingSocket() {
+TCPSocket *TCPConnection::createBindingSocket() {
     addrinfo *stableAddr = NULL;
 
-    TCPSocket resultSocket;
+    TCPSocket *resultSocket;
     for (stableAddr = res; stableAddr != NULL; stableAddr = stableAddr->ai_next) {
         if (stableAddr->ai_socktype != SOCK_STREAM) {
             continue;
         }
         try {
-            resultSocket = TCPSocket(stableAddr);
+            resultSocket = new TCPSocket(stableAddr);
         } catch (TCPException &e) {
-            resultSocket.closeSocket();
+            delete resultSocket;
             continue;
         }
 
         try {
-            resultSocket.reusePort();
+            resultSocket->reusePort();
         } catch (TCPException &e) {
-            resultSocket.closeSocket();
+            delete resultSocket;
             throw;
         }
 
         try {
-            resultSocket.bindSocket(stableAddr);
+            resultSocket->bindSocket(stableAddr);
         } catch (TCPException &e) {
-            resultSocket.closeSocket();
+            delete resultSocket;
             continue;
         }
         break;
     }
 
     if (stableAddr == NULL) {
-        resultSocket.closeSocket();
+        delete resultSocket;
         throw TCPException("Failed to bind");
     }
     return resultSocket;
