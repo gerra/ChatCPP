@@ -21,8 +21,10 @@ TCPSocket::TCPSocket(addrinfo *addr) {
 
 TCPSocket::~TCPSocket() {
     std::cerr << "Deleting socket " << sockfd << "\n";
-    for (auto *it : listeners) {
-        it->onDelete(sockfd);
+    if (sockfd >= 0) {
+        for (auto *it : listeners) {
+            it->onDelete(sockfd);
+        }
     }
     closeSocket();
 }
@@ -86,7 +88,7 @@ int TCPSocket::setNonBlocking() {
 #endif
 }
 
-void TCPSocket::sendMsg(char *msg) const {
+void TCPSocket::sendMsg(const char *msg) const {
     int msgSize = strlen(msg);
     if (send(sockfd, msg, msgSize, 0) == -1) {
         perror("send");
@@ -107,6 +109,7 @@ int TCPSocket::recieveMsg(char * buf, int maxSize) const {
         }
     }
     buf[nbytes] = '\0';
+    std::cerr << "received " << nbytes << "\n";
     return nbytes;
 }
 

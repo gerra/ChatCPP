@@ -57,7 +57,7 @@ public:
     void connectToAddr(addrinfo *addr);
     void reusePort();
     int setNonBlocking();
-    void sendMsg(char *msg) const;
+    void sendMsg(const char *msg) const;
     int recieveMsg(char * buf, int maxSize) const;
     void startListening(int count) const;
     TCPSocket acceptToNewSocket(sockaddr *addr, socklen_t *len) const;

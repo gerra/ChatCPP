@@ -1,6 +1,6 @@
-#include "server.h"
+#include "TCPServer.h"
 
-server::server(char *addr, char *port, int maxClientsCount, std::function<void (TCPSocket &)> onAccept,
+TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<void (TCPSocket &)> onAccept,
                EpollHandler &epoll) {
     try {
         tcpConnection.createAddress(addr, port);
@@ -20,13 +20,12 @@ server::server(char *addr, char *port, int maxClientsCount, std::function<void (
                         socklen_t addrLen;
                         addrLen = sizeof(theirAddr);
                         try {
-//                            TCPSocket clientSocket = listener.acceptToNewSocket((sockaddr *)&theirAddr, &addrLen);
-//                            TCPSocket& clientSocket = listener.acceptToNewSocket((sockaddr *)&theirAddr, &addrLen);
                             clients.push_back(listener.acceptToNewSocket((sockaddr *)&theirAddr, &addrLen));
-                            TCPSocket& clientSocket = clients.back();
-                            clientSocket.addListener((TCPSocket::Listener*)&epoll);
-                            clientSocket.setNonBlocking();
-                            Handler clientHandler = Handler([=, &clientSocket](int events) {
+                            clients.back().addListener((TCPSocket::Listener*)&epoll);
+                            clients.back().setNonBlocking();
+                            int k = clients.size() - 1;
+                            Handler clientHandler = Handler([=, k](int events) {
+                                                TCPSocket &clientSocket = clients[k];
                                                 try {
                                                     std::cerr << "OnAccept" << clientSocket.sockfd << "\n";
                                                     if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
@@ -41,7 +40,7 @@ server::server(char *addr, char *port, int maxClientsCount, std::function<void (
                                                 }
                                             });
                             epoll.addSocketToEpoll(
-                                        clientSocket,
+                                        clients.back(),
                                         EPOLLIN,
                                         clientHandler
                             );
@@ -64,8 +63,8 @@ server::server(char *addr, char *port, int maxClientsCount, std::function<void (
     }
 }
 
-server::~server() {
-    std::cerr << "deleting server starts..." << "\n";
+TCPServer::~TCPServer() {
+    std::cerr << "deleting TCPServer starts..." << "\n";
     listener.closeSocket();
-    std::cerr << "...deleting server ends" << "\n";
+    std::cerr << "...deleting TCPServer ends" << "\n";
 }

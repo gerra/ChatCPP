@@ -10,15 +10,15 @@
 #include "../tcpconnection.h"
 #include "../epollhandler.h"
 
-class server {  
+class TCPServer {
     TCPConnection tcpConnection;
     TCPSocket listener; // listening socket
     std::function<void(TCPSocket&)> onAccept;
     std::vector<TCPSocket> clients;
 public:
-    server(char *addr, char *port, int maxClientsCount, std::function<void(TCPSocket&)>,
+    TCPServer(char *addr, char *port, int maxClientsCount, std::function<void(TCPSocket&)>,
            EpollHandler &epoll);
-    ~server();
+    ~TCPServer();
 };
 
 #endif // SERVER_H

@@ -72,5 +72,6 @@ void EpollHandler::onClose(int fd) {
 }
 
 void EpollHandler::onDelete(int fd) {
-    onClose(fd);
+    //onClose(fd);
+    // if it' deleting |=> it was closed
 }
