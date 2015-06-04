@@ -2,8 +2,8 @@
 #define EPOLLHANDLER_H
 
 #include <sys/epoll.h>
-#include "tcpconnection.h"
 #include "handler.h"
+#include "tcpsocket.h"
 #include <map>
 
 #include <csignal>

@@ -5,10 +5,10 @@
 #include <functional>
 #include <signal.h>
 #include <memory>
-#include <vector>
+#include <map>
 
 #include "../tcpconnection.h"
-#include "../epollhandler.h"
+#include "../model/epollhandler.h"
 
 class TCPServer {
     TCPConnection tcpConnection;

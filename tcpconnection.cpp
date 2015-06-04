@@ -45,15 +45,18 @@ void TCPConnection::createAddress(char *address, char *port) {
 TCPSocket *TCPConnection::createBindingSocket() {
     addrinfo *stableAddr = NULL;
 
-    TCPSocket *resultSocket;
+    TCPSocket *resultSocket = NULL;
     for (stableAddr = res; stableAddr != NULL; stableAddr = stableAddr->ai_next) {
         if (stableAddr->ai_socktype != SOCK_STREAM) {
             continue;
         }
         try {
+            resultSocket = NULL;
             resultSocket = new TCPSocket(stableAddr);
         } catch (TCPException &e) {
-            delete resultSocket;
+            if (resultSocket != NULL) {
+                delete resultSocket;
+            }
             continue;
         }
 
@@ -74,7 +77,6 @@ TCPSocket *TCPConnection::createBindingSocket() {
     }
 
     if (stableAddr == NULL) {
-        delete resultSocket;
         throw TCPException("Failed to bind");
     }
     return resultSocket;

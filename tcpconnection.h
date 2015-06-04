@@ -12,8 +12,7 @@
 #include <iostream>
 
 
-#include "tcpsocket.h"
-#include "tcpexception.h"
+#include "model/tcpsocket.h"
 
 class TCPConnection {
     addrinfo hints;

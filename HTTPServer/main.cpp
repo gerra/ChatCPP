@@ -3,22 +3,43 @@
 //
 
 #include "HTTPServer.h"
-#include "../epollhandler.h"
-#include "../TCPServer/TCPServer.h"
+#include "../model/HTTPRequest.h"
+#include "../model/HTTPException.h"
+#include "../model/HTTPResponse.h"
 
 int main() {
     try {
         EpollHandler IOLoop(1024);
-        std::function<std::string(TCPSocket &, std::string &)> onGet = [] (TCPSocket &sock, std::string &request) -> std::string {
-            std::string res = "";
-            res += "HTTP/1.0 302 Found\r\n";
-            res += "Content-Type: text/html; charset=UTF-8\r\nContent-Length: 256\r\n";
-            res += "Date: Wed, 03 Jun 2015 00:42:14 GMT\r\nServer: GFE/2.0\r\nAlternate-Protocol: 80:quic,p=0\r\n\r\n";
-            res += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
-            res += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
-            res += "</BODY></HTML>\r\n";
-            //return "<html><title>HELLO!</title>WTF</html>\n";
-            return res;
+        std::function<HTTPResponse(TCPSocket &, HTTPRequest &)> onGet = [] (TCPSocket &sock, HTTPRequest &request) -> HTTPResponse {
+            HTTPResponse httpResponse;
+            httpResponse.setHttpVersion("HTTP/1.0");
+            httpResponse.setStatusCode(302);
+            httpResponse.setReasonPhrase("Found");
+            httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
+
+            std::string q = "";
+            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
+            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
+            q += "</BODY></HTML>\r\n";
+
+            httpResponse.setMessageBody(q);
+            return httpResponse;
+        };
+
+        std::function<HTTPResponse(TCPSocket &, HTTPRequest &)> onPost = [] (TCPSocket &sock, HTTPRequest &request) -> HTTPResponse {
+            HTTPResponse httpResponse;
+            httpResponse.setHttpVersion("HTTP/1.0");
+            httpResponse.setStatusCode(302);
+            httpResponse.setReasonPhrase("Found");
+            httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
+
+            std::string q = "";
+            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
+            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
+            q += "</BODY></HTML>\r\n";
+
+            httpResponse.setMessageBody(q);
+            return httpResponse;
         };
 
         HTTPServer server = HTTPServer("127.0.0.1", "2323", 10, onGet, IOLoop);
@@ -29,6 +50,7 @@ int main() {
         std::cerr << e.getMessage() << "\n";
     } catch (EpollException& e) {
         std::cerr << e.getMessage() << "\n";
+    } catch (...) {
     }
 
     std::cout << "Finish\n";

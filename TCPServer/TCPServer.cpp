@@ -3,6 +3,7 @@
 TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<void (TCPSocket &)> onAccept,
                EpollHandler &epoll) {
     try {
+        listener = NULL;
         tcpConnection.createAddress(addr, port);
         listener = tcpConnection.createBindingSocket();
         listener->setNonBlocking();
@@ -34,6 +35,7 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
                                                         onAccept(*clientSocket);
                                                     }
                                                 } catch (...) {
+                                                    std::cerr << "shit happens\n";
                                                     deleteClient(clientSocket);
                                                     throw;
                                                 }

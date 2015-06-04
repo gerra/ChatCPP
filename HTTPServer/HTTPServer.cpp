@@ -5,6 +5,7 @@
 #include "HTTPServer.h"
 #include "../TCPServer/TCPServer.h"
 #include "RequestUtils.h"
+#include "../model/HTTPException.h"
 
 void HTTPServer::addBufToString(std::string &s, const char *buf, int n) {
     for (int i = 0; i < n; i++) {
@@ -12,8 +13,10 @@ void HTTPServer::addBufToString(std::string &s, const char *buf, int n) {
     }
 }
 
-HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount, std::function<std::string(TCPSocket &sock, std::string &request)> onGet,
-           EpollHandler &epoll) {
+HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
+                       std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onGet,
+                       std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onPost,
+                       EpollHandler &epoll) {
     std::function<void(TCPSocket &)> onAccept = [&onGet, this](TCPSocket &sock) {
         const int BUF_MAX_SIZE = 4096;
         char buf[BUF_MAX_SIZE];
@@ -25,12 +28,30 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount, std::functio
             addBufToString(currentRequest, buf, len);
         }
 
-        std::cout << "Request from socket " << sock.sockfd << ": " << currentRequest << "\n";
-        if (RequestUtils::isGetRequest(currentRequest)) {
-            std::string response = onGet(sock, currentRequest);
-            sock.sendMsg(response.c_str());
-            std::cout << "Response for socket " << sock.sockfd << ": " << response << "\n";
+        HTTPRequest httpRequest;
+        HTTPResponse httpResponse;
+        try {
+            std::cout << currentRequest << "\n";
+            httpRequest = HTTPRequest(currentRequest);
+
+            std::cout << "Request from soket " << sock.sockfd << ": " << currentRequest << "\n";
+            if (httpRequest.getMethod() == "GET") {
+                httpResponse = onGet(sock, httpRequest);
+            } else if (httpRequest.getMethod() == "POST") {
+                httpResponse = onPost(sock, httpRequest);
+            }
+
+            sock.sendMsg(httpResponse.buildResponse().c_str());
+            std::cout << "Response for socket " << sock.sockfd << ": " << httpResponse.buildResponse() << "\n";
+        } catch (HTTPException &e) {
+            std::cerr << "Bad HTTP Request: " << e.getMessage();
+            httpResponse.setHttpVersion("HTTP/1.0");
+            httpResponse.setStatusCode(400);
+            httpResponse.setReasonPhrase("Bad request format");
+            sock.sendMsg(httpResponse.buildResponse().c_str());
         }
+
+
         currentRequest = "";
     };
     tcpServer = new TCPServer(addr, port, maxClientsCount * 2, onAccept, epoll);
