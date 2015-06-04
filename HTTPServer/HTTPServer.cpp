@@ -17,7 +17,7 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
                        std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onGet,
                        std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onPost,
                        EpollHandler &epoll) {
-    std::function<void(TCPSocket &)> onAccept = [&onGet, this](TCPSocket &sock) {
+    std::function<void(TCPSocket &)> onAccept = [&onGet, &onPost, this](TCPSocket &sock) {
         const int BUF_MAX_SIZE = 4096;
         char buf[BUF_MAX_SIZE];
 

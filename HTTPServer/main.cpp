@@ -42,7 +42,7 @@ int main() {
             return httpResponse;
         };
 
-        HTTPServer server = HTTPServer("127.0.0.1", "2323", 10, onGet, IOLoop);
+        HTTPServer server = HTTPServer("127.0.0.1", "2323", 10, onGet, onPost, IOLoop);
         //TCPServer myServer1("127.0.0.1", "2323", 10, NULL, IOLoop);
 
         IOLoop.run();
