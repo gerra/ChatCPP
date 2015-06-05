@@ -22,6 +22,7 @@ public:
     static std::vector<std::string> &getRequestHeaders();
     static void addMapValuesToString(const std::map<std::string, std::string> &mp, std::string &s);
     static std::string getIntAsString(int x);
+    //static std::string getValueFromJsonByKey(const std::string &jsonStr, const std::string &key);
 };
 
 #endif //CHATCPP_REQUESTUTILS_H

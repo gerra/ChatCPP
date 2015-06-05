@@ -22,14 +22,25 @@ TCPSocket::TCPSocket(addrinfo *addr) {
 
 TCPSocket::~TCPSocket() {
     std::cerr << "Deleting socket " << sockfd << "\n";
+//    if (sockfd >= 0) {
+//        std::cerr << "Closing socket " << sockfd << "\n";
+//        for (auto *it : listeners) {
+//            it->onClose(sockfd);
+//        }
+//        int res = close(sockfd);
+//        assert(res != -1);
+//        sockfd = -1;
+//    }
     if (sockfd >= 0) {
-        std::cerr << "Closing socket " << sockfd << "\n";
-        for (auto *it : listeners) {
-            it->onClose(sockfd);
+        std::cerr << "Closing socket " << sockfd << ", " << listeners.size() << " listeners" << "\n";
+        for (auto listener : listeners) {
+            listener->onClose(sockfd);
         }
-        int res = close(sockfd);
-        assert(res != -1);
-        sockfd = -1;
+        if (sockfd != -1) {
+            int res = close(sockfd);
+            assert(res != -1);
+            sockfd = -1;
+        }
     }
 }
 

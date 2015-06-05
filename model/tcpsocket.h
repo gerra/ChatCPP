@@ -22,7 +22,6 @@ public:
 private:
     TCPSocket(int fd);
     std::vector<Listener*> listeners;
-
 public:
     void addListener(Listener *listener) {
         std::cerr << "Listener added to socket" << sockfd << "\n";

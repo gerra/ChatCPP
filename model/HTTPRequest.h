@@ -16,6 +16,7 @@ class HTTPRequest {
 
     std::map<std::string, std::string> generalHeaders;
     std::map<std::string, std::string> requestHeaders;
+    std::map<std::string, std::string> extraHeaders;
 
     std::string messageBody;
 
@@ -30,6 +31,7 @@ class HTTPRequest {
                           std::string headerType);
     bool parseGeneralHeader(const std::string &s, int &from);
     bool parseRequestHeader(const std::string &s, int &from);
+    bool parseExtraHeader(const std::string &s, int &from);
 public:
     HTTPRequest(const std::string &s);
 

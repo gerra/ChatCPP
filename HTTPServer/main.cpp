@@ -1,11 +1,4 @@
-//
-// Created by german on 03.06.15.
-//
-
 #include "HTTPServer.h"
-#include "../model/HTTPRequest.h"
-#include "../model/HTTPException.h"
-#include "../model/HTTPResponse.h"
 
 int main() {
     try {
@@ -13,14 +6,25 @@ int main() {
         std::function<HTTPResponse(TCPSocket &, HTTPRequest &)> onGet = [] (TCPSocket &sock, HTTPRequest &request) -> HTTPResponse {
             HTTPResponse httpResponse;
             httpResponse.setHttpVersion("HTTP/1.0");
-            httpResponse.setStatusCode(302);
+            httpResponse.setStatusCode(200);
             httpResponse.setReasonPhrase("Found");
             httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
 
             std::string q = "";
-            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
-            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
-            q += "</BODY></HTML>\r\n";
+
+            q += "<HTML>\r\n<BODY>\r\n";
+
+            q += "<form action=\"http://127.0.0.1:2323\" method=\"post\">\r\n";
+            q += "<input name=\"say\" value=\"Hi\">\r\n";
+            q += "<input name=\"to\" value=\"Mom\">\r\n";
+            q += "<button>Send my greetings</button>\r\n";
+            q += "</form>\r\n";
+
+            q += "</BODY>\r\n</HTML>\r\n";
+
+//            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
+//            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
+//            q += "</BODY></HTML>\r\n";
 
             httpResponse.setMessageBody(q);
             return httpResponse;
@@ -34,9 +38,20 @@ int main() {
             httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
 
             std::string q = "";
-            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
-            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
-            q += "</BODY></HTML>\r\n";
+
+            q += "<HTML>\r\n<BODY>\r\n";
+
+            q += "<form action=\"http://foo.com\" method=\"post\">\r\n";
+            q += "<input name=\"say\" value=\"Hi\">\r\n";
+            q += "<input name=\"to\" value=\"Mom\">\r\n";
+            q += "<button>Send my greetings</button>\r\n";
+            q += "</form>\r\n";
+
+            q += "</BODY>\r\n</HTML>\r\n";
+
+//            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
+//            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
+//            q += "</BODY></HTML>\r\n";
 
             httpResponse.setMessageBody(q);
             return httpResponse;

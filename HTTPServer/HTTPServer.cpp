@@ -40,18 +40,16 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
             } else if (httpRequest.getMethod() == "POST") {
                 httpResponse = onPost(sock, httpRequest);
             }
-
-            sock.sendMsg(httpResponse.buildResponse().c_str());
-            std::cout << "Response for socket " << sock.sockfd << ": " << httpResponse.buildResponse() << "\n";
         } catch (HTTPException &e) {
-            std::cerr << "Bad HTTP Request: " << e.getMessage();
-            httpResponse.setHttpVersion("HTTP/1.0");
+            std::cerr << "Bad HTTP Request: " << e.getMessage() << "\n";
+
+            httpResponse.setHttpVersion("HTTP/1.1");
             httpResponse.setStatusCode(400);
-            httpResponse.setReasonPhrase("Bad request format");
-            sock.sendMsg(httpResponse.buildResponse().c_str());
+            httpResponse.setReasonPhrase("Bad request format!");
+            httpResponse.addEntityHeader("Content-Type", "text/html");
         }
-
-
+        std::cout << "Response for socket " << sock.sockfd << ": " << httpResponse.buildResponse() << "\n";
+        sock.sendMsg(httpResponse.buildResponse().c_str());
         currentRequest = "";
     };
     tcpServer = new TCPServer(addr, port, maxClientsCount * 2, onAccept, epoll);

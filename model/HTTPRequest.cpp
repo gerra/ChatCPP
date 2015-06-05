@@ -97,10 +97,39 @@ bool HTTPRequest::parseRequestHeader(const std::string &s, int &from) {
     return parseHeaderInMap(s, from, requestHeaders, RequestUtils::getRequestHeaders(), "request header");
 }
 
+
+bool HTTPRequest::parseExtraHeader(const std::string &s, int &from) {
+    int oldFrom = from;
+    std::string key = "";
+    while (from < s.length() && !isspace(s[from]) && s[from] != ':') {
+        key += s[from];
+        from++;
+    }
+    if (from == oldFrom) {
+        return false;
+    }
+    if (from >= s.length() || s[from] != ':') {
+        throw HTTPException(" \':\' after extra header " + key + " expected");
+    }
+    from++;
+    if (from >= s.length() || s[from] != ' ') {
+        throw HTTPException(" \' \' after extra header " + key + " expected");
+    }
+    from++;
+    std::string value;
+    while (from + 1 < s.length() && s.substr(from, 2) != "\r\n") {
+        value += s[from];
+        from++;
+    }
+    checkCRLF(s, from, "extra header " + key);
+    extraHeaders[key] = value;
+    return true;
+}
+
 HTTPRequest::HTTPRequest(const std::string &s) {
     int pos = 0;
     parseRequestLine(s, pos);
-    while (pos < s.length() && (parseRequestHeader(s, pos) || parseGeneralHeader(s, pos)));
+    while (pos < s.length() && (parseRequestHeader(s, pos) || parseGeneralHeader(s, pos) || parseExtraHeader(s, pos)));
     checkCRLF(s, pos, "end of request before message_body");
     messageBody = s.substr(pos);
 }

@@ -74,6 +74,8 @@ TCPServer::~TCPServer() {
 }
 
 void TCPServer::deleteClient(TCPSocket *client) {
-    clients.erase(client->sockfd);
-    delete client;
+    if (clients.find(client->sockfd) != clients.end()) {
+        clients.erase(client->sockfd);
+        delete client;
+    }
 }
