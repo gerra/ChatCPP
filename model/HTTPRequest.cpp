@@ -140,3 +140,7 @@ const std::string &HTTPRequest::getMethod() const {
 
 HTTPRequest::HTTPRequest() {
 }
+
+const std::string &HTTPRequest::getMessageBody() const {
+    return messageBody;
+}

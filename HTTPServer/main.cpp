@@ -1,4 +1,5 @@
 #include "HTTPServer.h"
+#include "RequestUtils.h"
 
 int main() {
     try {
@@ -39,13 +40,19 @@ int main() {
 
             std::string q = "";
 
+            if () {
+
+            } else {
+
+            }
+
             q += "<HTML>\r\n<BODY>\r\n";
 
-            q += "<form action=\"http://foo.com\" method=\"post\">\r\n";
-            q += "<input name=\"say\" value=\"Hi\">\r\n";
-            q += "<input name=\"to\" value=\"Mom\">\r\n";
-            q += "<button>Send my greetings</button>\r\n";
-            q += "</form>\r\n";
+            q += "HUI\r\n";
+
+            q += RequestUtils::getValueFromJsonByKey(request.getMessageBody(), "user");
+
+            q += "\r\n";
 
             q += "</BODY>\r\n</HTML>\r\n";
 

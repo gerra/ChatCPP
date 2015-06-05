@@ -77,14 +77,14 @@ std::string RequestUtils::getIntAsString(int x) {
     return res;
 }
 
-//std::string RequestUtils::getValueFromJsonByKey(const std::string &jsonStr, const std::string &key) {
-//    for (int i = 0; i < jsonStr.length(); i++) {
-//        if (jsonStr.substr(i, key.length()) == key) {
-//            int pos = i + key.length();
-//            while (jsonStr[pos] == ' ' || jsonStr[pos] == '\"' || jsonStr == ':') pos++;
-//            std::string value = "";
-//            while (jsonStr[pos] != '\"') value += jsonStr[pos++];
-//            return value;
-//        }
-//    }
-//}
+std::string RequestUtils::getValueFromJsonByKey(const std::string &jsonStr, const std::string &key) {
+    for (int i = 0; i < jsonStr.length(); i++) {
+        if (jsonStr.substr(i, key.length()) == key) {
+            int pos = i + key.length();
+            while (jsonStr[pos] == ' ' || jsonStr[pos] == '\"' || jsonStr[pos] == ':') pos++;
+            std::string value = "";
+            while (jsonStr[pos] != '\"') value += jsonStr[pos++];
+            return value;
+        }
+    }
+}

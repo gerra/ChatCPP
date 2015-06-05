@@ -36,6 +36,7 @@ public:
     HTTPRequest(const std::string &s);
 
     const std::string &getMethod() const;
+    const std::string &getMessageBody() const;
 
     HTTPRequest();
 };
