@@ -24,20 +24,29 @@
 #list {
     height: 500px;
     list-style-type: none;
+    margin: 0;
 }
 #input-form {
-
+    float: left;
 }
 #input-form textarea {
+    width: 698px;
+    height: 98px;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
     float: left;
-    width: 700px;
-    height: 100px;
+    resize: none;
+    outline: none;
 }
 #input-form .button-wrapper {
-    float: left;
     width: 100px;
+    height: 100px;
+    overflow: hidden;
+    float: left;
 }
-#input-form .button {
+#input-form button {
     width: 80px;
-    margin: 0 auto;
+    margin: 40px 10px;
+    overflow: hidden;
 }

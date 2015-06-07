@@ -2,7 +2,7 @@ var entryPoint = 'http://localhost:2323';
 function send(user, message, callback) {
     $.ajax({
         url: entryPoint+'/messages',
-        dataType: 'json',
+        //dataType: 'json',
         type: 'POST',
         data: JSON.stringify({
             user: user,
@@ -28,15 +28,30 @@ function render() {
         $("#list").html(response);
     });
 }
-$(document).ready(function() {
-    $("#input-form").on('submit', function(e) {
-        var user = 'Mike',
-            message = $('#message').val();
+function sendHandler() {
+    var user = 'Mike',
+        message = $('#message').val();
+    if (message != '') {
         $("#input-form button").attr('disabled','disabled');
+        $("#list").append('<li>'+user+': '+message+'</li>');
         send(user, message, function() {
             $("#message").val('');
             $("#input-form button").removeAttr('disabled');
         });
+    } else {
+        alert("Введите текст!");
+    }
+}
+$(document).ready(function() {
+    $("#input-form").on('submit', function(e) {
+        sendHandler();
+        e.preventDefault();
+    });
+    $('#input-form textarea').on('keyup', function(e) {
+
+        if (e.which == 13) {
+            $("#input-form").submit();
+        }
         e.preventDefault();
     });
     setInterval(render, 1000);
