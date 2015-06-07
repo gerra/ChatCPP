@@ -1,0 +1,43 @@
+#container {
+    width: 100%;
+    float: left;
+}
+.half {
+    width: 50%;
+    float: left;
+    height: 100px;
+}
+#wrapper {
+    overflow: hidden;
+    width: 800px;
+    height: 600px;
+    margin-right: -400px;
+    background-color: #eee;
+}
+.pull_right {
+    float: right;
+}
+.pull_left {
+    float: left;
+}
+
+#list {
+    height: 500px;
+    list-style-type: none;
+}
+#input-form {
+
+}
+#input-form textarea {
+    float: left;
+    width: 700px;
+    height: 100px;
+}
+#input-form .button-wrapper {
+    float: left;
+    width: 100px;
+}
+#input-form .button {
+    width: 80px;
+    margin: 0 auto;
+}
