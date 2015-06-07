@@ -7,11 +7,11 @@ Chat chat;
 HTTPResponse defaultResponse;
 
 int main() {
-    defaultResponse.setStatusCode(301);
-    defaultResponse.setReasonPhrase("Moved permanently");
-    defaultResponse.addEntityHeader("Content-Type", "text/html");
+    defaultResponse.setStatusCode(204);
+    defaultResponse.setReasonPhrase("No content");
+    defaultResponse.addEntityHeader("Content-Type", "*/*");
     defaultResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
-    defaultResponse.setMessageBody(RequestUtils::getFileAsString("/chat.html"));
+    //defaultResponse.setMessageBody(RequestUtils::getFileAsString("/chat.html"));
     try {
         EpollHandler IOLoop(1024);
 
