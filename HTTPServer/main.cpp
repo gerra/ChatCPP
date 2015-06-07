@@ -7,8 +7,8 @@ Chat chat;
 HTTPResponse defaultResponse;
 
 int main() {
-    defaultResponse.setStatusCode(204);
-    defaultResponse.setReasonPhrase("No content");
+    defaultResponse.setStatusCode(404);
+    defaultResponse.setReasonPhrase("Not found");
     defaultResponse.addEntityHeader("Content-Type", "*/*");
     defaultResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
     //defaultResponse.setMessageBody(RequestUtils::getFileAsString("/chat.html"));
