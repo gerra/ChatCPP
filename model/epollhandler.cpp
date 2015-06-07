@@ -1,7 +1,11 @@
 #include <cassert>
 #include "epollhandler.h"
+#include "SignalHandler.h"
 
 EpollHandler::EpollHandler(int maxCount) {
+    SignalHandler::registerEpollHandler(this);
+    SignalHandler::registerSignal(SIGINT, &SignalHandler::signal_int);
+    SignalHandler::registerSignal(SIGTERM, &SignalHandler::signal_term);
     epollFD = epoll_create(maxCount);
     if (epollFD == -1) {
         perror("epoll_create");
@@ -10,6 +14,9 @@ EpollHandler::EpollHandler(int maxCount) {
 }
 
 EpollHandler::~EpollHandler() {
+    SignalHandler::unregister_signal(SIGINT);
+    SignalHandler::unregister_signal(SIGTERM);
+    SignalHandler::unregisterEpollHandler();
     if (epollFD >= 0) {
         int res = close(epollFD);
         assert(res != -1);
@@ -17,7 +24,7 @@ EpollHandler::~EpollHandler() {
 }
 
 void EpollHandler::run() {
-    signal(SIGINT, EpollHandler::signal_int);
+   // signal(SIGINT, EpollHandler::signal_int);
     std::cerr << "Starting EpollHandler: " << "\n";
     for (;;) {
         if (flag) break;
@@ -69,4 +76,8 @@ void EpollHandler::onClose(int fd) {
     std::cerr << "epolldel starts" << "\n";
     handlers.erase(fd);
     std::cerr << "epolldel ends map erase" << "\n";
+}
+
+void EpollHandler::stop() {
+    flag = true;
 }

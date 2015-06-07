@@ -29,6 +29,7 @@ class EpollHandler : TCPSocket::Listener {
     static void signal_int(int);
 public:
     EpollHandler(int maxCount);
+    void stop();
     ~EpollHandler();
 
     void run();

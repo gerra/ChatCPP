@@ -31,10 +31,10 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
         HTTPRequest httpRequest;
         HTTPResponse httpResponse;
         try {
-            std::cout << currentRequest << "\n";
+            //std::cout << currentRequest << "\n";
             httpRequest = HTTPRequest(currentRequest);
 
-            std::cout << "Request from soket " << sock.sockfd << ": " << currentRequest << "\n";
+            //std::cout << "Request from soket " << sock.sockfd << ": " << currentRequest << "\n";
             if (httpRequest.getMethod() == "GET") {
                 httpResponse = onGet(httpRequest);
             } else if (httpRequest.getMethod() == "POST") {
@@ -45,10 +45,10 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
 
             httpResponse.setHttpVersion("HTTP/1.1");
             httpResponse.setStatusCode(400);
-            httpResponse.setReasonPhrase("Bad request format!");
-            httpResponse.addEntityHeader("Content-Type", "text/html");
+            httpResponse.setReasonPhrase("Bad Request");
+            httpResponse.addEntityHeader("Content-Type", "*/*");
         }
-        std::cout << "Response for socket " << sock.sockfd << ": " << httpResponse.buildResponse() << "\n";
+        std::cout << "Response for socket " << sock.sockfd << "\n";
         sock.sendMsg(httpResponse.buildResponse().c_str());
         currentRequest = "";
     };

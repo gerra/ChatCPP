@@ -5,8 +5,7 @@
 #ifndef CHATCPP_MESSAGE_H
 #define CHATCPP_MESSAGE_H
 
-
-#include "User.h"
+#include <string>
 
 class Message {
     std::string userName;

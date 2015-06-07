@@ -82,7 +82,12 @@ std::string RequestUtils::getValueFromJsonByKey(const std::string &jsonStr, cons
     for (int i = 0; i < jsonStr.length(); i++) {
         if (jsonStr.substr(i, key.length()) == key) {
             int pos = i + key.length();
-            while (pos < jsonStr.length() && (jsonStr[pos] == ' ' || jsonStr[pos] == '\"' || jsonStr[pos] == ':')) pos++;
+            while (pos < jsonStr.length() && jsonStr[pos] == ' ') pos++;
+            if (jsonStr[pos++] != '\"') return "";
+            while (pos < jsonStr.length() && jsonStr[pos] == ' ') pos++;
+            if (jsonStr[pos++] != ':') return "";
+            while (pos < jsonStr.length() && jsonStr[pos] == ' ') pos++;
+            if (jsonStr[pos++] != '\"') return "";
             std::string value = "";
             while (pos < jsonStr.length() && jsonStr[pos] != '\"') value += jsonStr[pos++];
             return value;

@@ -135,30 +135,6 @@ Chat/Chat.cpp.s:
 	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/Chat/Chat.cpp.s
 .PHONY : Chat/Chat.cpp.s
 
-Chat/User.o: Chat/User.cpp.o
-.PHONY : Chat/User.o
-
-# target to build an object file
-Chat/User.cpp.o:
-	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/Chat/User.cpp.o
-.PHONY : Chat/User.cpp.o
-
-Chat/User.i: Chat/User.cpp.i
-.PHONY : Chat/User.i
-
-# target to preprocess a source file
-Chat/User.cpp.i:
-	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/Chat/User.cpp.i
-.PHONY : Chat/User.cpp.i
-
-Chat/User.s: Chat/User.cpp.s
-.PHONY : Chat/User.s
-
-# target to generate assembly for a file
-Chat/User.cpp.s:
-	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/Chat/User.cpp.s
-.PHONY : Chat/User.cpp.s
-
 HTTPServer/HTTPServer.o: HTTPServer/HTTPServer.cpp.o
 .PHONY : HTTPServer/HTTPServer.o
 
@@ -303,6 +279,30 @@ model/HTTPResponse.cpp.s:
 	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/model/HTTPResponse.cpp.s
 .PHONY : model/HTTPResponse.cpp.s
 
+model/SignalHandler.o: model/SignalHandler.cpp.o
+.PHONY : model/SignalHandler.o
+
+# target to build an object file
+model/SignalHandler.cpp.o:
+	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/model/SignalHandler.cpp.o
+.PHONY : model/SignalHandler.cpp.o
+
+model/SignalHandler.i: model/SignalHandler.cpp.i
+.PHONY : model/SignalHandler.i
+
+# target to preprocess a source file
+model/SignalHandler.cpp.i:
+	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/model/SignalHandler.cpp.i
+.PHONY : model/SignalHandler.cpp.i
+
+model/SignalHandler.s: model/SignalHandler.cpp.s
+.PHONY : model/SignalHandler.s
+
+# target to generate assembly for a file
+model/SignalHandler.cpp.s:
+	$(MAKE) -f CMakeFiles/ChatCPP.dir/build.make CMakeFiles/ChatCPP.dir/model/SignalHandler.cpp.s
+.PHONY : model/SignalHandler.cpp.s
+
 model/epollhandler.o: model/epollhandler.cpp.o
 .PHONY : model/epollhandler.o
 
@@ -411,9 +411,6 @@ help:
 	@echo "... Chat/Chat.o"
 	@echo "... Chat/Chat.i"
 	@echo "... Chat/Chat.s"
-	@echo "... Chat/User.o"
-	@echo "... Chat/User.i"
-	@echo "... Chat/User.s"
 	@echo "... HTTPServer/HTTPServer.o"
 	@echo "... HTTPServer/HTTPServer.i"
 	@echo "... HTTPServer/HTTPServer.s"
@@ -432,6 +429,9 @@ help:
 	@echo "... model/HTTPResponse.o"
 	@echo "... model/HTTPResponse.i"
 	@echo "... model/HTTPResponse.s"
+	@echo "... model/SignalHandler.o"
+	@echo "... model/SignalHandler.i"
+	@echo "... model/SignalHandler.s"
 	@echo "... model/epollhandler.o"
 	@echo "... model/epollhandler.i"
 	@echo "... model/epollhandler.s"

@@ -35,7 +35,7 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
                                                         onAccept(*clientSocket);
                                                     }
                                                 } catch (...) {
-                                                    std::cerr << "shit happens\n";
+                                                    std::cerr << "user thrown an exception\n";
                                                     deleteClient(clientSocket);
                                                     throw;
                                                 }
@@ -65,12 +65,12 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
 }
 
 TCPServer::~TCPServer() {
-    std::cerr << "deleting TCPServer starts..." << "\n";
+    std::cerr << "deleting TCPServer started..." << "\n";
     while (!clients.empty()) {
         deleteClient(clients.begin()->second);
     }
     delete listener;
-    std::cerr << "...deleting TCPServer ends" << "\n";
+    std::cerr << "...deleting TCPServer ended" << "\n";
 }
 
 void TCPServer::deleteClient(TCPSocket *client) {
