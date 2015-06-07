@@ -7,8 +7,8 @@ Chat chat;
 HTTPResponse defaultResponse;
 
 int main() {
-    defaultResponse.setStatusCode(200);
-    defaultResponse.setReasonPhrase("OK");
+    defaultResponse.setStatusCode(301);
+    defaultResponse.setReasonPhrase("Moved permanently");
     defaultResponse.addEntityHeader("Content-Type", "text/html");
     defaultResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
     defaultResponse.setMessageBody(RequestUtils::getFileAsString("/chat.html"));
@@ -48,6 +48,12 @@ int main() {
                 httpResponse.addEntityHeader("Content-Type", "application/json; charset=UTF-8");
                 httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
                 httpResponse.setMessageBody(text);
+            } else if (path.size() == 0) {
+                httpResponse.setStatusCode(200);
+                httpResponse.setReasonPhrase("OK");
+                httpResponse.setMessageBody(RequestUtils::getFileAsString("chat.html"));
+                httpResponse.addEntityHeader("Content-Type", "text/html");
+                httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
             } else {
                 if (path.size() > 0) {
                     try {
@@ -61,6 +67,10 @@ int main() {
                             contentType = "application/javascript";
                         } else if (ext == ".html") {
                             contentType = "text/html";
+                        } else if (ext == ".css") {
+                            contentType = "text/css";
+                        } else if (ext == ".png") {
+                            contentType = "image/png";
                         }
                         httpResponse.addEntityHeader("Content-Type", contentType);
                         httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
