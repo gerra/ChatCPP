@@ -44,9 +44,18 @@
     height: 100px;
     overflow: hidden;
     float: left;
+    background-color: white;
 }
 #input-form button {
     width: 80px;
     margin: 40px 10px;
     overflow: hidden;
+}
+
+#list {
+    padding: 0;
+}
+#list li {
+    padding: 5px;
+    font-family: 'Tahoma';
 }

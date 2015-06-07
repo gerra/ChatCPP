@@ -11,6 +11,7 @@ function send(user, message, callback) {
         success: callback
     });
 }
+
 function get(callback) {
     $.ajax({
         url: entryPoint+'/messages',
@@ -19,6 +20,7 @@ function get(callback) {
         success: callback
     });
 }
+
 function render() {
     get(function(data) {
         var response = '';
@@ -28,31 +30,42 @@ function render() {
         $("#list").html(response);
     });
 }
-function sendHandler() {
-    var user = 'Mike',
-        message = $('#message').val();
-    if (message != '') {
-        $("#input-form button").attr('disabled','disabled');
-        $("#list").append('<li>'+user+': '+message+'</li>');
-        send(user, message, function() {
-            $("#message").val('');
-            $("#input-form button").removeAttr('disabled');
-        });
-    } else {
-        alert("Введите текст!");
-    }
-}
-$(document).ready(function() {
-    $("#input-form").on('submit', function(e) {
-        sendHandler();
-        e.preventDefault();
-    });
-    $('#input-form textarea').on('keyup', function(e) {
 
-        if (e.which == 13) {
-            $("#input-form").submit();
+$(document).ready(function() {
+    var name = null;
+    if (!localStorage.getItem('user')) {
+        while((name = prompt("Введите имя")) == null);
+        localStorage.setItem('user', name);
+    }
+
+    $("#input-form").on('submit', function(e) {
+        var user = localStorage.getItem('user'),
+            message = $('#message').val();
+        if (message != '') {
+            $("#input-form button").attr('disabled','disabled');
+            $("#list").append('<li>'+user+': '+message+'</li>');
+            send(user, message, function() {
+                $("#message").val('');
+                $("#input-form button").removeAttr('disabled');
+            });
+        } else {
+            alert("Введите текст!");
         }
         e.preventDefault();
     });
+
+    $('#input-form textarea').on('keyup', function(e) {
+        var message = $('#message').val();
+        while(message.length > 0 && message[message.length - 1] == '\n') {
+            message = message.slice(0, -1);
+        }
+        if (e.which == 13 && message != '') {
+            $("#input-form").submit();
+        } else if (e.which == 13) {
+            $("#message").val('');
+        }
+        e.preventDefault();
+    });
+
     setInterval(render, 1000);
 });
