@@ -14,6 +14,14 @@ class Message {
 
 public:
     Message(const std::string &userName, const std::string &message) : userName(userName), message(message) { }
+
+    const std::string &getUserName() const {
+        return userName;
+    }
+
+    const std::string &getMessage() const {
+        return message;
+    }
 };
 
 

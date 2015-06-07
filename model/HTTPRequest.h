@@ -37,6 +37,7 @@ public:
 
     const std::string &getMethod() const;
     const std::string &getMessageBody() const;
+    const std::string &getRequestUri() const;
 
     HTTPRequest();
 };

@@ -144,3 +144,7 @@ HTTPRequest::HTTPRequest() {
 const std::string &HTTPRequest::getMessageBody() const {
     return messageBody;
 }
+
+const std::string &HTTPRequest::getRequestUri() const {
+    return requestUri;
+}

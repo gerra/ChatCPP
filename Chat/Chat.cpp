@@ -9,7 +9,7 @@ void Chat::addMessage(const Message &message) {
 }
 
 void Chat::addUser(const std::string &user) {
-    if (users.find(user) == users.end()) {
+    if (user.length() != 0 && users.find(user) == users.end()) {
         users.insert(user);
     }
 }

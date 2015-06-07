@@ -56,6 +56,9 @@ std::string HTTPResponse::buildResponse() {
     res += "\r\n";
 
     entityHeaders["Content-Length"] = RequestUtils::getIntAsString(messageBody.length());
+    if (entityHeaders.find("Content-Type") == entityHeaders.end() || entityHeaders["Content-Type"].length() == 0) {
+        entityHeaders["Content-Type"] = "text/plain";
+    }
 
     RequestUtils::addMapValuesToString(generalHeaders, res);
     RequestUtils::addMapValuesToString(responseHeaders, res);

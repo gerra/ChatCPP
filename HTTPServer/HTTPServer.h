@@ -17,8 +17,8 @@ class HTTPServer {
     void addBufToString(std::string &s, const char *buf, int n);
 public:
     HTTPServer(char *addr, char *port, int maxClientsCount,
-               std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onGet,
-               std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onPost,
+               std::function<HTTPResponse(HTTPRequest &request)> onGet,
+               std::function<HTTPResponse(HTTPRequest &request)> onPost,
                EpollHandler &epoll);
     ~HTTPServer();
 };

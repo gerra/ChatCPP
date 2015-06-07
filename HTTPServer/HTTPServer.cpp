@@ -14,8 +14,8 @@ void HTTPServer::addBufToString(std::string &s, const char *buf, int n) {
 }
 
 HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
-                       std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onGet,
-                       std::function<HTTPResponse(TCPSocket &sock, HTTPRequest &request)> onPost,
+                       std::function<HTTPResponse(HTTPRequest &request)> onGet,
+                       std::function<HTTPResponse(HTTPRequest &request)> onPost,
                        EpollHandler &epoll) {
     std::function<void(TCPSocket &)> onAccept = [&onGet, &onPost, this](TCPSocket &sock) {
         const int BUF_MAX_SIZE = 4096;
@@ -36,9 +36,9 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
 
             std::cout << "Request from soket " << sock.sockfd << ": " << currentRequest << "\n";
             if (httpRequest.getMethod() == "GET") {
-                httpResponse = onGet(sock, httpRequest);
+                httpResponse = onGet(httpRequest);
             } else if (httpRequest.getMethod() == "POST") {
-                httpResponse = onPost(sock, httpRequest);
+                httpResponse = onPost(httpRequest);
             }
         } catch (HTTPException &e) {
             std::cerr << "Bad HTTP Request: " << e.getMessage() << "\n";

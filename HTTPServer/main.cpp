@@ -1,71 +1,109 @@
 #include "HTTPServer.h"
 #include "RequestUtils.h"
+#include "../Chat/Chat.h"
+#include "../model/HTTPException.h"
+
+Chat chat;
+HTTPResponse defaultResponse;
 
 int main() {
+    defaultResponse.setStatusCode(200);
+    defaultResponse.setReasonPhrase("OK");
+    defaultResponse.addEntityHeader("Content-Type", "text/html");
+    defaultResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
+    defaultResponse.setMessageBody(RequestUtils::getFileAsString("/chat.html"));
     try {
         EpollHandler IOLoop(1024);
-        std::function<HTTPResponse(TCPSocket &, HTTPRequest &)> onGet = [] (TCPSocket &sock, HTTPRequest &request) -> HTTPResponse {
+
+        std::function<HTTPResponse(HTTPRequest &)> onGet = [&chat] (HTTPRequest &request) -> HTTPResponse {
             HTTPResponse httpResponse;
             httpResponse.setHttpVersion("HTTP/1.0");
-            httpResponse.setStatusCode(200);
-            httpResponse.setReasonPhrase("Found");
-            httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
 
-            std::string q = "";
-
-            q += "<HTML>\r\n<BODY>\r\n";
-
-            q += "<form action=\"http://127.0.0.1:2323\" method=\"post\">\r\n";
-            q += "<input name=\"say\" value=\"Hi\">\r\n";
-            q += "<input name=\"to\" value=\"Mom\">\r\n";
-            q += "<button>Send my greetings</button>\r\n";
-            q += "</form>\r\n";
-
-            q += "</BODY>\r\n</HTML>\r\n";
-
-//            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
-//            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
-//            q += "</BODY></HTML>\r\n";
-
-            httpResponse.setMessageBody(q);
+            std::vector<std::string> path = RequestUtils::parseRequestUri(request.getRequestUri());
+            if (path.size() == 1 && path.back() == "messages") {
+                std::vector<Message> &messages = chat.getMessages();
+                std::string text = "[";
+                int from = messages.size() - 15;
+                if (from < 0) {
+                    from = 0;
+                }
+                for (int i = from; i < messages.size(); i++) {
+                    auto &message = messages[i];
+//                for (auto &message : chat.getMessages()) {
+                    text += "{";
+                    text += "\"user\":";
+                    text += "\"" + message.getUserName() + "\"";
+                    text += ",";
+                    text += "\"message\":";
+                    text += "\"" + message.getMessage() + "\"";
+                    text += "},";
+                }
+                if (text.back() != '[') {
+                    text.back() = ']'; // replace last comma
+                } else {
+                    text += "]";
+                }
+                httpResponse.setStatusCode(200);
+                httpResponse.setReasonPhrase("OK");
+                httpResponse.addEntityHeader("Content-Type", "application/json; charset=UTF-8");
+                httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
+                httpResponse.setMessageBody(text);
+            } else {
+                if (path.size() > 0) {
+                    try {
+                        // try to send a file
+                        httpResponse.setMessageBody(RequestUtils::getFileAsString(request.getRequestUri()));
+                        httpResponse.setStatusCode(200);
+                        httpResponse.setReasonPhrase("OK");
+                        std::string ext = RequestUtils::getFileExtension(path.back());
+                        std::string contentType = "";
+                        if (ext == ".js") {
+                            contentType = "application/javascript";
+                        } else if (ext == ".html") {
+                            contentType = "text/html";
+                        }
+                        httpResponse.addEntityHeader("Content-Type", contentType);
+                        httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
+                    } catch (...) {
+                       // throw HTTPException("File not found");
+                        httpResponse = defaultResponse;
+                    }
+                } else {
+                    //throw HTTPException("Bad requestUri");
+                    httpResponse = defaultResponse;
+                }
+            }
             return httpResponse;
         };
 
-        std::function<HTTPResponse(TCPSocket &, HTTPRequest &)> onPost = [] (TCPSocket &sock, HTTPRequest &request) -> HTTPResponse {
+        std::function<HTTPResponse(HTTPRequest &)> onPost = [&chat] (HTTPRequest &request) -> HTTPResponse {
             HTTPResponse httpResponse;
-            httpResponse.setHttpVersion("HTTP/1.0");
-            httpResponse.setStatusCode(302);
-            httpResponse.setReasonPhrase("Found");
-            httpResponse.addEntityHeader("Content-Type", "text/html; charset=UTF-8");
+            httpResponse.setHttpVersion("HTTP/1.1");
 
-            std::string q = "";
-
-            if () {
-
+            std::vector<std::string> path = RequestUtils::parseRequestUri(request.getRequestUri());
+            if (path.size() == 1 && path.back() == "users") {
+                chat.addUser(RequestUtils::getValueFromJsonByKey(request.getMessageBody(), "user"));
+                httpResponse.setStatusCode(200);
+                httpResponse.setReasonPhrase("OK");
+                httpResponse.addEntityHeader("Content-Type", "text/plain; charset=UTF-8");
+                httpResponse.setMessageBody("User added\r\n");
+            } else if (path.size() == 1 && path.back() == "messages") {
+                chat.addMessage(Message(
+                        RequestUtils::getValueFromJsonByKey(request.getMessageBody(), "user"),
+                        RequestUtils::getValueFromJsonByKey(request.getMessageBody(), "message"))
+                );
+                httpResponse.setStatusCode(200);
+                httpResponse.setReasonPhrase("OK");
+                httpResponse.addEntityHeader("Content-Type", "text/plain; charset=UTF-8");
+                httpResponse.addResponseHeader("Access-Control-Allow-Origin", "*");
+                httpResponse.setMessageBody("Message added\r\n");
             } else {
-
+                throw HTTPException("Bad requestUri");
             }
-
-            q += "<HTML>\r\n<BODY>\r\n";
-
-            q += "HUI\r\n";
-
-            q += RequestUtils::getValueFromJsonByKey(request.getMessageBody(), "user");
-
-            q += "\r\n";
-
-            q += "</BODY>\r\n</HTML>\r\n";
-
-//            q += "<HTML><HEAD><meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\r\n";
-//            q += "<TITLE>302 Moved</TITLE></HEAD><BODY>\r\n<H1>302 Moved</H1>\r\nThe document has moved\r\n<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;ei=Zk1uVYO5MNGANJqIgNgE\">here</A>.\r\n";
-//            q += "</BODY></HTML>\r\n";
-
-            httpResponse.setMessageBody(q);
             return httpResponse;
         };
 
         HTTPServer server = HTTPServer("127.0.0.1", "2323", 10, onGet, onPost, IOLoop);
-        //TCPServer myServer1("127.0.0.1", "2323", 10, NULL, IOLoop);
 
         IOLoop.run();
     } catch (TCPException& e) {

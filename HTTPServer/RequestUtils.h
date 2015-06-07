@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "../model/tcpsocket.h"
 
 class RequestUtils {
     static std::vector<std::string> requestMethods;
@@ -23,6 +24,9 @@ public:
     static void addMapValuesToString(const std::map<std::string, std::string> &mp, std::string &s);
     static std::string getIntAsString(int x);
     static std::string getValueFromJsonByKey(const std::string &jsonStr, const std::string &key);
+    static std::string getFileAsString(const std::string &fileName);
+    static std::vector<std::string> parseRequestUri(const std::string uri);
+    static std::string getFileExtension(const std::string &file);
 };
 
 #endif //CHATCPP_REQUESTUTILS_H

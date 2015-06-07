@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://127.0.0.1:2323/jquery-1.11.3.min.js"></script>
+<script>
+$(document).ready(function() {
+	$("#sendmessage").attr("disabled", true);
+	$(document).keydown(function(e) {
+		var key = e.which;
+		if (key == 13) {
+			$("#sendmessage").click();
+			return false;
+		}
+	});
+	$("#sendmessage").click(function() {
+		if ($("#message").val().length == 0) return false;
+		$.post("http://127.0.0.1:2323/messages", 
+			"{\"user\":\"" + "Mike" + "\", " + 
+			"\"message\":\"" + $("#message").val() + "\"}"
+		, 
+		function(data, status) {
+			$("#message").val("")
+			$("#sendmessage").attr("disabled", true);
+		});
+    	});
+
+	$("#message").keyup(function() {
+		if (this.value.length == 0) {
+			$("#sendmessage").attr("disabled", true);
+		} else {
+			$("#sendmessage").attr("disabled", false);
+		}
+	});
+
+	$("#getmessages").click(function() {
+		$.get("http://127.0.0.1:2323/messages", function(data, status){
+			var arr_from_json = JSON.parse(data);
+		});
+
+		$.getJSON("http://127.0.0.1:2323/messages", function( data ) {
+		  var items = [];
+		  $.each(data, function( key, val ) {
+			$.each(val, function( key, val ) {
+		    		items.push( "<li id='" + key + "'>" + val + "</li>" );
+			});
+		  });
+		 
+		  $( "<ul/>", {
+		    "class": "my-new-list",
+		    html: items.join( "" )
+		  }).appendTo("#list");
+		});
+	});
+});
+</script>
+</head>
+<body>
+	<style>
+		#container {
+			width: 100%;
+			float: left;
+		}
+		.half {
+			width: 50%;
+			float: left;
+			height: 100px;
+			#background-color: #eeeeee;
+		}
+		#wrapper {
+			width: 800px;
+			margin-right: -400px;
+			height: 300px;
+			background-color: #b6b6b6;
+		}
+		.pull_right {
+			float: right;
+		}
+		.pull_left {
+			float: left;
+		}
+	</style>
+	<div id="container">
+		<div class="half">
+			<div id="wrapper" class="pull_right">
+				<ul id="list">
+				
+				</ul>
+				<input type="text" id="message"/>
+				<button id="sendmessage">Send</button>
+				<p>					
+				<button id="getmessages">Get</button>				
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+
