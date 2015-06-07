@@ -88,6 +88,7 @@ std::string RequestUtils::getValueFromJsonByKey(const std::string &jsonStr, cons
             return value;
         }
     }
+    return "";
 }
 
 std::string RequestUtils::getFileAsString(const std::string &fileName) {

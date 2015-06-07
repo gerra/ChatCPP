@@ -7,6 +7,7 @@ Chat chat;
 HTTPResponse defaultResponse;
 
 int main() {
+    defaultResponse.setHttpVersion("HTTP/1.0");
     defaultResponse.setStatusCode(404);
     defaultResponse.setReasonPhrase("Not found");
     defaultResponse.addEntityHeader("Content-Type", "*/*");
