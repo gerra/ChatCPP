@@ -18,25 +18,28 @@ public:
     }
 };
 
+class TCPSocket;
 class EpollHandler : TCPSocket::Listener {
-    bool running;
     int epollFD;
     std::map<int, Handler> handlers;
-    std::map<int, TCPSocket> sockets;
     int getEvents(epoll_event *events, int maxActionsCount, int timeout = -1);
 
     volatile sig_atomic_t flag = 0;
-    static void signal_int(int);
 public:
-    EpollHandler(int maxCount);
-    void stop();
+    EpollHandler(const EpollHandler &other) = delete;
+
     ~EpollHandler();
 
+    EpollHandler(int maxCount);
+    void stop();
     void run();
-
     void addSocketToEpoll(TCPSocket &socket, std::uint32_t events, Handler handler);
 
-    void onClose(int fd);
+    virtual void onClose(int fd) override;
+
+private:
+    virtual void onReadData(int fd, int nbytes) override;
+    virtual void onWriteData(int fd, int nbytes) override;
 };
 
 #endif // EPOLLHANDLER_H

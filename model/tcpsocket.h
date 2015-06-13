@@ -10,6 +10,7 @@
 #include "tcpexception.h"
 #include <vector>
 #include <iostream>
+#include <string>
 
 class EpollHandler;
 
@@ -17,14 +18,19 @@ class TCPSocket {
 public:
     struct Listener {
         virtual void onClose(int fd) = 0;
+        virtual void onReadData(int fd, int nbytes) = 0;
+        virtual void onWriteData(int fd, int nbytes) = 0;
     };
 
 private:
     TCPSocket(int fd);
     std::vector<Listener*> listeners;
+    std::string forSending;
+
+    void sendMsgOnReady();
 public:
     void addListener(Listener *listener) {
-        std::cerr << "Listener added to socket" << sockfd << "\n";
+        std::cerr << "Listener added to socket " << sockfd << "\n";
         listeners.push_back(listener);
     }
 
@@ -32,6 +38,7 @@ public:
 
     friend class EpollHandler;
     friend class Handler;
+    friend class TCPServer;
 
     TCPSocket() {
         sockfd = -1;
@@ -59,10 +66,10 @@ public:
     void connectToAddr(addrinfo *addr);
     void reusePort();
     int setNonBlocking();
-    void sendMsg(const char *msg) const;
+    void sendMsg(const char *msg);
     int recieveMsg(char * buf, int maxSize) const;
     void startListening(int count) const;
-    TCPSocket *acceptToNewSocket(sockaddr *addr, socklen_t *len) const;
+    TCPSocket *acceptNewSocket(sockaddr *addr, socklen_t *len) const;
 
 };
 

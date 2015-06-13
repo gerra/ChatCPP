@@ -26,12 +26,13 @@ class HTTPRequest {
     void parseRequestLine(const std::string &s, int &from);
 
     bool parseHeaderInMap(const std::string &s, int &from,
-                          std::map<std::string, std::string> headersMap,
+                          std::map<std::string, std::string> &headersMap,
                           std::vector<std::string> availableHeaders,
                           std::string headerType);
     bool parseGeneralHeader(const std::string &s, int &from);
     bool parseRequestHeader(const std::string &s, int &from);
     bool parseExtraHeader(const std::string &s, int &from);
+    bool checkFullRequest(const std::string &s, int &from, std::string extraMessage);
 public:
     HTTPRequest(const std::string &s);
 

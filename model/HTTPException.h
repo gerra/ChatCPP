@@ -20,4 +20,10 @@ public:
     }
 };
 
+class NotFullRequestException : public HTTPException {
+public:
+    NotFullRequestException(std::string msg) : HTTPException(msg) {}
+    NotFullRequestException(const char *msg) : HTTPException(msg) {}
+};
+
 #endif //CHATCPP_HTTPEXCEPTION_H

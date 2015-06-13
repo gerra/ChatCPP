@@ -1,4 +1,5 @@
 #include "tcpsocket.h"
+#include "epollhandler.h"
 #include <assert.h>
 #include <iostream>
 #include <fcntl.h>
@@ -22,15 +23,6 @@ TCPSocket::TCPSocket(addrinfo *addr) {
 
 TCPSocket::~TCPSocket() {
     std::cerr << "Deleting socket " << sockfd << "\n";
-//    if (sockfd >= 0) {
-//        std::cerr << "Closing socket " << sockfd << "\n";
-//        for (auto *it : listeners) {
-//            it->onClose(sockfd);
-//        }
-//        int res = close(sockfd);
-//        assert(res != -1);
-//        sockfd = -1;
-//    }
     if (sockfd >= 0) {
         std::cerr << "Closing socket " << sockfd << ", " << listeners.size() << " listeners" << "\n";
         for (auto listener : listeners) {
@@ -50,7 +42,7 @@ void TCPSocket::reusePort() {
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
                    &yes, sizeof(int)) == -1) {
         perror("setsockport");
-        throw TCPException("Failed to set socket on port");
+        throw TCPException("Failed to set socket option for reusing address");
     }
 }
 
@@ -65,45 +57,60 @@ void TCPSocket::bindSocket(addrinfo *addr) {
 void TCPSocket::connectToAddr(addrinfo *addr) {
     int res = connect(sockfd, addr->ai_addr, addr->ai_addrlen);
     if (res == -1) {
-        perror("connect: ");
+        perror("connect");
         throw TCPException("Failed to connect");
     }
 }
 
 int TCPSocket::setNonBlocking() {
-    int flags;
-    /* If they have O_NONBLOCK, use the Posix way to do it */
-    /* Fixme: O_NONBLOCK is defined but broken on SunOS 4.1.x and AIX 3.2.5. */
-    if (-1 == (flags = fcntl(sockfd, F_GETFL, 0))) {
+    int flags = 0;
+    if ((flags = fcntl(sockfd, F_GETFL, 0)) == -1) {
         flags = 0;
+        perror("fcntl, get flags");
     }
-    return {
-        fcntl(sockfd, F_SETFL, flags | O_NONBLOCK)
-    };
+    return fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
 }
 
-void TCPSocket::sendMsg(const char *msg) const {
+
+void TCPSocket::sendMsgOnReady() {
+    const char *msg = forSending.c_str();
     int msgSize = strlen(msg);
-    if (send(sockfd, msg, msgSize, 0) == -1) {
-        perror("send");
-        throw TCPException("Sending error");
+
+    std::cout << "Sending " << msgSize << " bytes:\n" << "\n";
+    int totalSent = 0;
+    int sent;
+    while ((sent = send(sockfd, msg + totalSent, msgSize - totalSent < 1024 ? msgSize - totalSent : 1024, 0)) > 0) {
+        totalSent += sent;
     }
+
+    std::cout << "======= Sending finished (sent " << totalSent << " bytes) =======\n";
+    std::cout << "___________________________________________________________________________\n";
+
+    forSending = forSending.substr(totalSent);
+
+    int success = totalSent == msgSize ? 1 : 0;
+    for (auto listener : listeners) {
+        listener->onWriteData(sockfd, success);
+    }
+}
+
+void TCPSocket::sendMsg(const char *msg) {
+    forSending += std::string(msg);
 }
 
 int TCPSocket::recieveMsg(char * buf, int maxSize) const {
     std::cerr << "Recieve from " << sockfd << "\n";
     int nbytes;
-    if ((nbytes = recv(sockfd, buf, maxSize, 0)) <= 0) {
-        if (nbytes == 0) {
-            fprintf(stdout, "socket %d hung up\n", sockfd);
-            return 0;
-        } else {
-            perror("recv");
-            //throw TCPException("Recieving error");
-        }
+    if ((nbytes = recv(sockfd, buf, maxSize, 0)) == 0) {
+        fprintf(stdout, "socket %d hung up\n", sockfd);
     }
-    buf[nbytes] = '\0';
-    std::cerr << "received " << nbytes << "\n";
+    if (nbytes != 0) buf[nbytes] = '\0';
+    std::cout  << "========= Received " << nbytes << ": =========\n";
+    std::cout << buf << "\n";
+    std::cout << "====================================\n";
+    for (auto listener : listeners) {
+        listener->onReadData(sockfd, nbytes);
+    }
     return nbytes;
 }
 
@@ -114,9 +121,9 @@ void TCPSocket::startListening(int count) const {
     }
 }
 
-TCPSocket *TCPSocket::acceptToNewSocket(sockaddr *addr, socklen_t *len) const {
+TCPSocket *TCPSocket::acceptNewSocket(sockaddr *addr, socklen_t *len) const {
     int newFD = accept(sockfd, addr, len);
-    std::cerr << newFD << " accepting from" << sockfd << "\n" << "\n";
+    std::cerr << newFD << " accepted from " << sockfd << "\n" << "\n";
     if (newFD == -1) {
         perror("accept");
         throw TCPException("Unnable to accept");

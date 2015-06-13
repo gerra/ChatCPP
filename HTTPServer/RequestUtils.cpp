@@ -105,14 +105,12 @@ std::string RequestUtils::getFileAsString(const std::string &fileName) {
     }
     std::ifstream file(fileName2);
     if (!file.good()) {
-        throw "File not found";
+        throw fileName2.c_str();
     }
-    std::string res = "";
-    std::string line;
-    while (std::getline(file, line)) {
-        res += line + "\r\n";
-    }
-    return res;
+
+    std::string content( (std::istreambuf_iterator<char>(file) ),
+                         (std::istreambuf_iterator<char>()    ) );
+    return content;
 }
 
 std::vector<std::string> RequestUtils::parseRequestUri(const std::string uri) {

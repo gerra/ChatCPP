@@ -1,6 +1,7 @@
-#include <cassert>
 #include "epollhandler.h"
+#include "tcpsocket.h"
 #include "SignalHandler.h"
+#include <cassert>
 
 EpollHandler::EpollHandler(int maxCount) {
     SignalHandler::registerEpollHandler(this);
@@ -25,7 +26,7 @@ EpollHandler::~EpollHandler() {
 
 void EpollHandler::run() {
    // signal(SIGINT, EpollHandler::signal_int);
-    std::cerr << "Starting EpollHandler: " << "\n";
+    std::cerr << "Starting EpollHandler" << "\n";
     for (;;) {
         if (flag) break;
 
@@ -35,10 +36,10 @@ void EpollHandler::run() {
         if (nfds < 0) {
             return;
         }
-        std::cerr << "changed " << nfds << " sockets:" << "\n";
+        std::cerr << "Changed " << nfds << " sockets" << "\n";
         for (int i = 0; i < nfds; i++) {
             int curFD = events[i].data.fd;
-            std::cerr << "   " << curFD << "changed" << "\n";
+            std::cerr << "   " << curFD << " changed" << "\n";
             std::uint32_t curEvents = events[i].events;
             if (handlers.find(curFD) != handlers.end()) {
                 handlers[curFD].handle(curEvents);
@@ -57,12 +58,7 @@ void EpollHandler::addSocketToEpoll(TCPSocket &socket, std::uint32_t events, Han
         throw EpollException("Adding socket to epoll error");
     }
     handlers[sockfd] = handler;
-    std::cerr << "Added to epoll: " << sockfd << "\n";
-}
-
-void EpollHandler::signal_int(int) {
-    static EpollHandler loop(1024);
-    loop.flag = true;
+    std::cerr << sockfd << " added to epoll" << "\n";
 }
 
 int EpollHandler::getEvents(epoll_event *events, int maxEventsCount, int timeout) {
@@ -70,14 +66,31 @@ int EpollHandler::getEvents(epoll_event *events, int maxEventsCount, int timeout
 }
 
 void EpollHandler::onClose(int fd) {
+    std::cerr << "Deleting " << fd << " from epoll\n";
     if ((epoll_ctl(epollFD, EPOLL_CTL_DEL, fd, NULL)) == -1) {
         perror("onClose_epoll_ctl");
     }
-    std::cerr << "epolldel starts" << "\n";
     handlers.erase(fd);
-    std::cerr << "epolldel ends map erase" << "\n";
 }
 
 void EpollHandler::stop() {
     flag = true;
+}
+
+void EpollHandler::onReadData(int fd, int nbytes) {
+    epoll_event event = {};
+    event.data.fd = fd;
+    event.events = nbytes == 0 ? 0 : EPOLLOUT;
+    if (epoll_ctl(epollFD, EPOLL_CTL_MOD, fd, &event) < 0) {
+        perror("epoll set mode");
+    }
+}
+
+void EpollHandler::onWriteData(int fd, int nbytes) {
+    epoll_event event = {};
+    event.data.fd = fd;
+    event.events = nbytes == 1 ? EPOLLIN : EPOLLOUT;
+    if (epoll_ctl(epollFD, EPOLL_CTL_MOD, fd, &event) < 0) {
+        perror("epoll set mode");
+    }
 }

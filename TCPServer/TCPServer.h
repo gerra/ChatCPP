@@ -16,7 +16,7 @@ class TCPServer {
     std::map<int, TCPSocket *> clients;
     void deleteClient(TCPSocket *client);
 public:
-    TCPServer(char *addr, char *port, int maxClientsCount, std::function<void(TCPSocket&)>,
+    TCPServer(const char *addr, const char *port, int maxClientsCount, std::function<void(TCPSocket&)>,
            EpollHandler &epoll);
     ~TCPServer();
 };

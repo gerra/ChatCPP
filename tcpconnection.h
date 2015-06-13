@@ -20,7 +20,7 @@ class TCPConnection {
 public:
     TCPConnection();
     ~TCPConnection();
-    void createAddress(char * address, char * port);
+    void createAddress(const char * address, const char * port);
 //    TCPSocket createConnection();
     TCPSocket *createBindingSocket();
 };

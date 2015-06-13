@@ -7,19 +7,27 @@
 #include "../HTTPServer/RequestUtils.h"
 #include "HTTPException.h"
 
+
+bool HTTPRequest::checkFullRequest(const std::string &s, int &from, std::string extraMessage = "") {
+    if (s.length() <= from) throw NotFullRequestException("Not Full Request" + (extraMessage.length() != 0 ? " (" + extraMessage + ")" : ""));
+    return true;
+}
+
 void HTTPRequest::checkSP(const std::string &s, int &from, std::string extraMessage = "") {
-    if (from >= s.length() || s[from] != ' ') {
+    checkFullRequest(s, from, extraMessage);
+    if (s[from] != ' ') {
         throw HTTPException("SP expected" + (extraMessage.length() != 0 ? " (" + extraMessage + ")" : ""));
     }
     from++;
 }
 
 void HTTPRequest::checkCRLF(const std::string &s, int &from, std::string extraMessage = "") {
-    if (from >= s.length() || s[from] != '\r') {
-        throw HTTPException("CR expected" + (extraMessage.length() != 0 ? " (" + extraMessage + ")" : ""));
+    checkFullRequest(s, from, extraMessage);
+    if (s[from] == '\r') {
+        from++;
     }
-    from++;
-    if (from >= s.length() || s[from] != '\n') {
+    checkFullRequest(s, from, extraMessage);
+    if (s[from] != '\n') {
         throw HTTPException("LF expected" + (extraMessage.length() != 0 ? " (" + extraMessage + ")" : ""));
     }
     from++;
@@ -38,15 +46,14 @@ void HTTPRequest::parseRequestLine(const std::string &s, int &from) {
         throw HTTPException("Incorrect request method");
     }
     from += method.size();
-
-    checkSP(s, from, "Request Line");
+    checkSP(s, from, "Request Line, sp after method");
 
     while (!isspace(s[from])) {
         requestUri += s[from];
         from++;
     }
 
-    checkSP(s, from, "Request Line");
+    checkSP(s, from, "Request Line, sp after uri");
 
     if (s.substr(from, 5) != "HTTP/") {
         throw HTTPException("HTTP version expected");
@@ -62,22 +69,25 @@ void HTTPRequest::parseRequestLine(const std::string &s, int &from) {
 }
 
 bool HTTPRequest::parseHeaderInMap(const std::string &s, int &from,
-                      std::map<std::string, std::string> headersMap,
+                      std::map<std::string, std::string> &headersMap,
                       std::vector<std::string> availableHeaders,
                       std::string headerType) {
     for (std::string &header : availableHeaders) {
         if (s.substr(from, header.size()) == header) {
             from += header.size();
-            if (from >= s.length() || s[from] != ':') {
+            checkFullRequest(s, from);
+            if (s[from] != ':') {
                 throw HTTPException(" \':\' after " + headerType + " " + header + " expected");
             }
             from++;
-            if (from >= s.length() || s[from] != ' ') {
+            checkFullRequest(s, from);
+            if (s[from] != ' ') {
                 throw HTTPException(" \' \' after " + headerType + " " + header + " expected");
             }
             from++;
             std::string value;
-            while (from + 1 < s.length() && s.substr(from, 2) != "\r\n") {
+            while (from < s.length()) {
+                if (s[from] == '\n' || from + 1 < s.length() && s[from] == '\r' && s[from + 1] == '\n') break;
                 value += s[from];
                 from++;
             }
@@ -108,16 +118,19 @@ bool HTTPRequest::parseExtraHeader(const std::string &s, int &from) {
     if (from == oldFrom) {
         return false;
     }
-    if (from >= s.length() || s[from] != ':') {
+    checkFullRequest(s, from);
+    if (s[from] != ':') {
         throw HTTPException(" \':\' after extra header " + key + " expected");
     }
     from++;
-    if (from >= s.length() || s[from] != ' ') {
+    checkFullRequest(s, from);
+    if (s[from] != ' ') {
         throw HTTPException(" \' \' after extra header " + key + " expected");
     }
     from++;
     std::string value;
-    while (from + 1 < s.length() && s.substr(from, 2) != "\r\n") {
+    while (from < s.length()) {
+        if (s[from] == '\n' || from + 1 < s.length() && s[from] == '\r' && s[from + 1] == '\n') break;
         value += s[from];
         from++;
     }
@@ -129,6 +142,7 @@ bool HTTPRequest::parseExtraHeader(const std::string &s, int &from) {
 HTTPRequest::HTTPRequest(const std::string &s) {
     int pos = 0;
     parseRequestLine(s, pos);
+
     while (pos < s.length() && (parseRequestHeader(s, pos) || parseGeneralHeader(s, pos) || parseExtraHeader(s, pos)));
     checkCRLF(s, pos, "end of request before message_body");
     messageBody = s.substr(pos);

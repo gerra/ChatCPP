@@ -1,6 +1,6 @@
 #include "TCPServer.h"
 
-TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<void (TCPSocket &)> onAccept,
+TCPServer::TCPServer(const char *addr, const char *port, int maxClientsCount, std::function<void (TCPSocket &)> onAccept,
                EpollHandler &epoll) {
     try {
         listener = NULL;
@@ -9,33 +9,36 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
         listener->setNonBlocking();
         listener->startListening(maxClientsCount);
         listener->addListener((TCPSocket::Listener*)&epoll);
-        std::cerr << listener->sockfd <<  "(listener)" << "\n";
+        std::cerr << "Server socket " << listener->sockfd << "\n";
 
         epoll.addSocketToEpoll(
                     *listener,
                     EPOLLIN,
                     Handler([=, &epoll](int events) {
+                        if (!(events & EPOLLIN)) return;
                         // events is EPOLLIN
-                        std::cerr << "I'm listener of new connections" << "\n";
+                        std::cerr << "New connection on listener socket" << "\n";
                         sockaddr_storage theirAddr;
                         socklen_t addrLen;
                         addrLen = sizeof(theirAddr);
                         try {
-                            TCPSocket *clientSocket = listener->acceptToNewSocket((sockaddr *)&theirAddr, &addrLen);
+                            TCPSocket *clientSocket = listener->acceptNewSocket((sockaddr *) &theirAddr, &addrLen);
                             clientSocket->addListener((TCPSocket::Listener*)&epoll);
                             clientSocket->setNonBlocking();
                             clients[clientSocket->sockfd] = clientSocket;
                             Handler clientHandler = Handler([=](int events) {
                                                 try {
-                                                    std::cerr << "OnAccept" << clientSocket->sockfd << "\n";
+                                                    std::cerr << "New event on " << clientSocket->sockfd << "\n";
                                                     if (events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                                                         std::cerr << "client closed connection" << "\n";
                                                         deleteClient(clientSocket);
-                                                    } else {
+                                                    } else if (events & EPOLLIN) {
                                                         onAccept(*clientSocket);
+                                                    } else if (events & EPOLLOUT) {
+                                                        clientSocket->sendMsgOnReady();
                                                     }
                                                 } catch (...) {
-                                                    std::cerr << "user thrown an exception\n";
+                                                    std::cerr << "!!! User thrown an exception !!!\n";
                                                     deleteClient(clientSocket);
                                                     throw;
                                                 }
@@ -65,12 +68,13 @@ TCPServer::TCPServer(char *addr, char *port, int maxClientsCount, std::function<
 }
 
 TCPServer::~TCPServer() {
-    std::cerr << "deleting TCPServer started..." << "\n";
+    std::cerr << "Deleting TCPServer" << "\n";
     while (!clients.empty()) {
         deleteClient(clients.begin()->second);
     }
-    delete listener;
-    std::cerr << "...deleting TCPServer ended" << "\n";
+    if (listener != NULL) {
+        delete listener;
+    }
 }
 
 void TCPServer::deleteClient(TCPSocket *client) {

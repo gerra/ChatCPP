@@ -16,7 +16,7 @@ class HTTPServer {
     std::string currentRequest;
     void addBufToString(std::string &s, const char *buf, int n);
 public:
-    HTTPServer(char *addr, char *port, int maxClientsCount,
+    HTTPServer(const std::string &addr, const std::string &port, int maxClientsCount,
                std::function<HTTPResponse(HTTPRequest &request)> onGet,
                std::function<HTTPResponse(HTTPRequest &request)> onPost,
                EpollHandler &epoll);

@@ -13,7 +13,7 @@ void HTTPServer::addBufToString(std::string &s, const char *buf, int n) {
     }
 }
 
-HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
+HTTPServer::HTTPServer(const std::string &addr, const std::string &port, int maxClientsCount,
                        std::function<HTTPResponse(HTTPRequest &request)> onGet,
                        std::function<HTTPResponse(HTTPRequest &request)> onPost,
                        EpollHandler &epoll) {
@@ -27,7 +27,7 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
             if (len <= 0) break;
             addBufToString(currentRequest, buf, len);
         }
-
+        std::cerr << " ======\n" << currentRequest << "\n===========\n";
         HTTPRequest httpRequest;
         HTTPResponse httpResponse;
         try {
@@ -40,6 +40,11 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
             } else if (httpRequest.getMethod() == "POST") {
                 httpResponse = onPost(httpRequest);
             }
+            std::cout << "Response for socket " << sock.sockfd << ": \n";
+            sock.sendMsg(httpResponse.buildResponse().c_str());
+            currentRequest = "";
+        } catch (NotFullRequestException &e) {
+            std::cerr << "Not full request: " << e.getMessage() << "\n";
         } catch (HTTPException &e) {
             std::cerr << "Bad HTTP Request: " << e.getMessage() << "\n";
 
@@ -47,14 +52,18 @@ HTTPServer::HTTPServer(char *addr, char *port, int maxClientsCount,
             httpResponse.setStatusCode(400);
             httpResponse.setReasonPhrase("Bad Request");
             httpResponse.addEntityHeader("Content-Type", "*/*");
+
+            std::cout << "Response for socket " << sock.sockfd << ": \n";
+            sock.sendMsg(httpResponse.buildResponse().c_str());
+            currentRequest = "";
         }
-        std::cout << "Response for socket " << sock.sockfd << "\n";
-        sock.sendMsg(httpResponse.buildResponse().c_str());
-        currentRequest = "";
+
+
     };
-    tcpServer = new TCPServer(addr, port, maxClientsCount * 2, onAccept, epoll);
+    tcpServer = new TCPServer(addr.c_str(), port.c_str(), maxClientsCount * 2, onAccept, epoll);
 }
 
 HTTPServer::~HTTPServer() {
+    std::cerr << "Deleting HTTPServer\n";
     delete tcpServer;
 }

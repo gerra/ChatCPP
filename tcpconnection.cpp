@@ -3,7 +3,7 @@
 TCPConnection::TCPConnection() {
 }
 
-void TCPConnection::createAddress(char *address, char *port) {
+void TCPConnection::createAddress(const char *address, const char *port) {
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC; // whatever ipv4 or ipv6
     hints.ai_socktype = SOCK_STREAM; // tcp connection
