@@ -72,7 +72,7 @@ int TCPSocket::setNonBlocking() {
 }
 
 
-void TCPSocket::sendMsgOnReady() {
+void TCPSocket::sendMsgFromBuffer() {
     const char *msg = forSending.c_str();
     int msgSize = strlen(msg);
 

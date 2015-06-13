@@ -27,7 +27,7 @@ private:
     std::vector<Listener*> listeners;
     std::string forSending;
 
-    void sendMsgOnReady();
+    void sendMsgFromBuffer();
 public:
     void addListener(Listener *listener) {
         std::cerr << "Listener added to socket " << sockfd << "\n";

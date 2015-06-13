@@ -35,7 +35,7 @@ TCPServer::TCPServer(const char *addr, const char *port, int maxClientsCount, st
                                                     } else if (events & EPOLLIN) {
                                                         onAccept(*clientSocket);
                                                     } else if (events & EPOLLOUT) {
-                                                        clientSocket->sendMsgOnReady();
+                                                        clientSocket->sendMsgFromBuffer();
                                                     }
                                                 } catch (...) {
                                                     std::cerr << "!!! User thrown an exception !!!\n";

@@ -13,7 +13,7 @@
 
 class HTTPServer {
     TCPServer *tcpServer;
-    std::string currentRequest;
+    std::map<int, std::string> currentRequest;
     void addBufToString(std::string &s, const char *buf, int n);
 public:
     HTTPServer(const std::string &addr, const std::string &port, int maxClientsCount,

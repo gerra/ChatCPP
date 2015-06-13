@@ -25,14 +25,14 @@ HTTPServer::HTTPServer(const std::string &addr, const std::string &port, int max
         while (true) {
             len = sock.recieveMsg(buf, BUF_MAX_SIZE);
             if (len <= 0) break;
-            addBufToString(currentRequest, buf, len);
+            addBufToString(currentRequest[sock.sockfd], buf, len);
         }
-        std::cerr << " ======\n" << currentRequest << "\n===========\n";
+        std::cerr << " ======\n" << currentRequest[sock.sockfd] << "\n===========\n";
         HTTPRequest httpRequest;
         HTTPResponse httpResponse;
         try {
             //std::cout << currentRequest << "\n";
-            httpRequest = HTTPRequest(currentRequest);
+            httpRequest = HTTPRequest(currentRequest[sock.sockfd]);
 
             //std::cout << "Request from soket " << sock.sockfd << ": " << currentRequest << "\n";
             if (httpRequest.getMethod() == "GET") {
@@ -42,7 +42,7 @@ HTTPServer::HTTPServer(const std::string &addr, const std::string &port, int max
             }
             std::cout << "Response for socket " << sock.sockfd << ": \n";
             sock.sendMsg(httpResponse.buildResponse().c_str());
-            currentRequest = "";
+            currentRequest[sock.sockfd] = "";
         } catch (NotFullRequestException &e) {
             std::cerr << "Not full request: " << e.getMessage() << "\n";
         } catch (HTTPException &e) {
@@ -55,7 +55,7 @@ HTTPServer::HTTPServer(const std::string &addr, const std::string &port, int max
 
             std::cout << "Response for socket " << sock.sockfd << ": \n";
             sock.sendMsg(httpResponse.buildResponse().c_str());
-            currentRequest = "";
+            currentRequest[sock.sockfd] = "";
         }
 
 
